@@ -13,7 +13,6 @@
             display: none;
         }
 
-         
         body {
             background-color: ffd0d0;
         }
@@ -121,19 +120,21 @@
         updateHertz();
 
         window.addEventListener("keydown", (e) =>{
-            let keyboardIn = String.fromCharCode(e.which).toLowerCase()
-            let note = KEYBOARD_LAYOUT.indexOf(keyboardIn.charAt(0))
-            if (note >= 0){
-                let mod8 = note%7
-                let oct = Math.floor(note/8)
-                // prepare note
-                let note2play = hetrzScale[mod8]
-                if (oct == 0){
-                    note2play = note2play / 2
-                } else if (oct > 1){
-                    note2play = note2play * (2 * (oct - 1))
+            if (document.activeElement != document.getElementById("baseInputId")){
+                let keyboardIn = String.fromCharCode(e.which).toLowerCase()
+                let note = KEYBOARD_LAYOUT.indexOf(keyboardIn.charAt(0))
+                if (note >= 0){
+                    let mod8 = note%7
+                    let oct = Math.floor(note/8)
+                    // prepare note
+                    let note2play = hetrzScale[mod8]
+                    if (oct == 0){
+                        note2play = note2play / 2
+                    } else if (oct > 1){
+                        note2play = note2play * (2 * (oct - 1))
+                    }
+                    playFreq(note2play, 1)
                 }
-                playFreq(note2play, 1)
             }
         });
     </script>
@@ -147,4 +148,5 @@
         <input id="play1InputId" type="button" value="7" onclick="playNote(7,4)"/>
     
     </span>
+    <img src="./music.gif"></img>
     </body>
