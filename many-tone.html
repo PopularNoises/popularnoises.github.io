@@ -1,5 +1,4 @@
 <head>
-    <!-- <script src="./audio.js"></script> -->
      <style>
         .piano {
             width: 100;
@@ -19,27 +18,18 @@
      </style>
 </head>
 <body>
-    Auto Key<br>
-    <label for="C4">Hertz Value: </label>
+    Equal Intervals of any kind
+    <br>
+    Base Hertz Value:
     <input type="text" id="baseInputId" name="base" required minlength="3" maxlength="6" size="4" value="256"/>
-    <select name="note" id="noteSelectId">
-        <option value="1">i</option>
-        <option value="2">ii</option>
-        <option value="3">iii</option>
-        <option value="4">iv</option>
-        <option value="5">v</option>
-        <option value="6">vi</option>
-        <option value="7">vii</option>
-      </select>
-      <select name="key" id="keySelectId">
-        <option value="major">Major</option>
-        <option value="minor">minor</option>
-      </select>
-      <input id="makeKeyInputId" type="button" value="makekey" onclick="updateHertz()" />
-      <br>
+    <br>
+    Notes in the Scale
+    <input type="text" id="manyToneId" name="base" required minlength="1" maxlength="2" size="1" value=""/>
+    <br>
     <script>
-        const DECIMAL_2_ROOTS= [1.0595, 1.1225,1.1892,1.2599,1.3348,1.4142,1.4983,1.5874,1.6818,1.7818,1.8877,2]
-        const KEYBOARD_LAYOUT = ["0","9","8","7","6","5","4","3","2","1","p","o","i","u","y","t","r","e","w","q","l","k","j","h","g","f","d","s","a","m","n","b","v","c","x","z"]
+        let DECIMAL_2_ROOTS = [1.0595, 1.1225,1.1892,1.2599,1.3348,1.4142,1.4983,1.5874,1.6818,1.7818,1.8877,2]
+        let SCALE_SIZE = 12
+        const KEYBOARD_LAYOUT = ["p","o","i","u","y","t","r","e","w","q","l","k","j","h","g","f","d","s","a","m","n","b","v","c","x","z"]
         KEYBOARD_LAYOUT.reverse()
         // console.log(KEYBOARD_LAYOUT)
         let hetrzScale = []
@@ -84,7 +74,7 @@
         }
 
         window.addEventListener('input', function (evt) {
-            updateHertz();
+            makeManyTone();
         });
 
         function updateHertz(){
@@ -117,17 +107,41 @@
             // console.log("updated freq list: " + (hetrzScale.toString()))
         }
 
-        updateHertz();
+        function makeDynamicNoteInputs(scale){
+            let dynamic_input_html = `<input id="play0InputId" type="button" value="0" onclick="playFreq(${document.getElementById("baseInputId").value}, 4)"/>`
+            for (let i = 0; i < scale; i++){
+                let freqCoef = DECIMAL_2_ROOTS[i] * document.getElementById("baseInputId").value
+                dynamic_input_html += `<input id="play${i+1}InputId" type="button" value="${i+1}" onclick="playFreq(${freqCoef}, 4)"/>`
+            }
+            document.getElementById("pianoSpanId").innerHTML = dynamic_input_html
+        }
+
+        function makeManyTone(){
+            let scale = document.getElementById("manyToneId").value
+            DECIMAL_2_ROOTS = []
+            let core = Math.pow(2,(1/scale))
+            console.log(core)
+            DECIMAL_2_ROOTS.push(core)
+            for (let p = 2; p < scale; p++){
+                let pwr = Math.pow(core,p)
+                DECIMAL_2_ROOTS.push(pwr)
+            }
+            DECIMAL_2_ROOTS.push(2)
+            console.log(DECIMAL_2_ROOTS)
+            makeDynamicNoteInputs(scale)
+        }
+
+        // updateHertz();
 
         window.addEventListener("keydown", (e) =>{
             if (document.activeElement != document.getElementById("baseInputId")){
                 let keyboardIn = String.fromCharCode(e.which).toLowerCase()
                 let note = KEYBOARD_LAYOUT.indexOf(keyboardIn.charAt(0))
                 if (note >= 0){
-                    let mod8 = note%7
-                    let oct = Math.floor(note/8)
+                    let modScale = note%document.getElementById("manyToneId").value
+                    let oct = Math.floor(note/DECIMAL_2_ROOTS.length)
                     // prepare note
-                    let note2play = hetrzScale[mod8]
+                    let note2play = DECIMAL_2_ROOTS[modScale] * document.getElementById("baseInputId").value
                     if (oct == 0){
                         note2play = note2play / 2
                     } else if (oct > 1){
@@ -138,15 +152,9 @@
             }
         });
     </script>
-    <span class="piano">
-        <input id="play1InputId" type="button" value="1" onclick="playNote(1,4)"/>
-        <input id="play1InputId" type="button" value="2" onclick="playNote(2,4)"/>
-        <input id="play1InputId" type="button" value="3" onclick="playNote(3,4)"/>
-        <input id="play1InputId" type="button" value="4" onclick="playNote(4,4)"/>
-        <input id="play1InputId" type="button" value="5" onclick="playNote(5,4)"/>
-        <input id="play1InputId" type="button" value="6" onclick="playNote(6,4)"/>
-        <input id="play1InputId" type="button" value="7" onclick="playNote(7,4)"/>
-    
-    </span>
     <img src="./music.gif"></img>
+    <br/>
+    <br/>
+    <span id="pianoSpanId" class="piano">
+    </span>
     </body>

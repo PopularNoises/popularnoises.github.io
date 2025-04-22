@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Earth with Lat/Lon Marker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+      #globe-container {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        visibility: hidden;
+        height: 600px;
+      }
+        #globe-container.visible {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      body {
+        text-align: center;
+        font-family: sans-serif;
+        background: #111;
+        color: #eee;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Can you see?</h1>
+    <p id="random-coords"></p>
+    <button onclick="showGlobe()">Show Globe</button>
+
+    <div id="globe-container"></div>
+
+    <script>
+      let earthImg;
+      let earthRadius = 200;
+      let rotationY = 0;
+
+      let targetLat;
+      let targetLon;
+      let canvas;
+
+      function preload() {
+        earthImg = loadImage('./earthmap1k.jpg');
+      }
+
+      function setup() {
+        canvas = createCanvas(600, 600, WEBGL);
+        canvas.parent('globe-container');
+        textureMode(NORMAL);
+
+        // Generate random lat/lon
+        targetLat = random(-90, 90);
+        targetLon = random(-180, 180);
+
+        document.getElementById('random-coords').innerText =
+          `Latitude: ${targetLat.toFixed(4)}, Longitude: ${targetLon.toFixed(4)}`;
+        noLoop(); // Start paused until button is clicked
+      }
+
+      function draw() {
+        background(0);
+        orbitControl();
+
+        let latAngle = radians(targetLat);
+        let lonAngle = radians(targetLon + 180);
+
+        rotationY += 0.01; // adjust speed as you like
+        rotateY(rotationY);
+
+        noStroke();
+        texture(earthImg);
+        sphere(earthRadius);
+
+        let marker = latLonToSphere(targetLat, targetLon, earthRadius + 2);
+        push();
+        translate(marker.x, marker.y, marker.z);
+        fill(255, 0, 0);
+        noStroke();
+        sphere(5);
+        pop();
+      }
+
+      function latLonToSphere(lat, lon, radius) {
+        lon = lon + 60; // You can fine-tune this for alignment
+        let phi = radians(90 - lat);
+        let theta = radians(lon);
+
+        let x = radius * sin(phi) * cos(theta);
+        let y = -radius * cos(phi);
+        let z = radius * sin(phi) * sin(theta);
+
+        return createVector(x, y, z);
+      }
+
+      function showGlobe() {
+        const container = document.getElementById('globe-container');
+        container.classList.add('visible');
+
+        setTimeout(() => {
+          loop();
+        }, 100);
+      }
+    </script>
+  </body>
+</html>
